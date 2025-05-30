@@ -57,8 +57,8 @@ pr:
     - projects/rocthrust/NOTICES.txt
   drafts: false
 
-jobs:
-  - template: ${{ variables.CI_COMPONENT_PATH }}/rocThrust.yml@pipelines_repo
-    parameters:
-      sparseCheckoutDir: projects/rocthrust
-      triggerDownstreamJobs: ${{ parameters.triggerDownstreamJobs }}
+stages:
+- template: ${{ variables.CI_COMPONENT_PATH }}/rocThrust.yml@pipelines_repo
+  parameters:
+    sparseCheckoutDir: projects/rocthrust
+    triggerDownstreamJobs: ${{ parameters.triggerDownstreamJobs }}
