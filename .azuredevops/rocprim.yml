@@ -57,7 +57,7 @@ pr:
     - projects/rocprim/NOTICES.txt
   drafts: false
 
-jobs:
+stages:
   - template: ${{ variables.CI_COMPONENT_PATH }}/rocPRIM.yml@pipelines_repo
     parameters:
       sparseCheckoutDir: projects/rocprim
