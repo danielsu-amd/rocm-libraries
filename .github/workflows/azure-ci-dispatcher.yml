@@ -19,61 +19,31 @@ jobs:
     name: Dispatch Azure Pipelines
     runs-on: ubuntu-latest
     steps:
+    - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@df432ceedc7162793a195dd1713ff69aefc7379e # v2.0.6
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
     - name: Checkout code
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       with:
-        fetch-depth: 0
+        ref: refs/pull/${{ github.event.pull_request.number }}/merge
         sparse-checkout: .github
         sparse-checkout-cone-mode: true
+        token: ${{ steps.generate-token.outputs.token }}
+
     - name: Install python dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r .github/requirements.txt
-    - shell: bash
-      run: |
-        # echo '#!/bin/bash
-        # BUILD_DEFINITION_ID=$1
-        # GITHUB_REPO_URI=$2
-        # curl --location "https://dev.azure.com/ROCm-CI/ROCm-CI/_apis/build/builds?api-version=7.1"
-        # --header "Authorization: Basic $(printf ":$AZ_PAT" | base64)"
-        # --header "Content-Type: application/json"
-        # --data "{
-        #     "definition": {
-        #         "id": "$BUILD_DEFINITION_ID"
-        #     },
-        #     "project": {
-        #         "id": "b22b20c4-7700-462e-b80b-76b8222eb8f2"
-        #     },
-        #     "triggerInfo": {
-        #         "pr.sourceBranch": "${{ github.event.pull_request.head.ref }}",
-        #         "pr.sourceSha": "${{ github.event.pull_request.head.sha }}",
-        #         "pr.id": "${{ github.event.pull_request.id }}",
-        #         "pr.title": "${{ github.event.pull_request.title }}",
-        #         "pr.number": "${{ github.event.pull_request.number }}",
-        #         "pr.isFork": "${{ github.event.pull_request.head.repo.fork }}",
-        #         "pr.draft": "${{ github.event.pull_request.draft }}",
-        #         "pr.sender.name": "${{ github.event.pull_request.user.login }}",
-        #         "pr.sender.avatarUrl": "${{ github.event.pull_request.user.avatar_url }}",
-        #         "pr.sender.isExternal": "True",
-        #         "pr.providerId": "github",
-        #         "pr.autoCancel": "true"
-        #     },
-        #     "sourceBranch": "${{ github.ref }}",
-        #     "reason": "pullRequest",
-        #     "parameters": "{
-        #         \"system.pullRequest.pullRequestId\":\"${{ github.event.pull_request.id }}\",
-        #         \"system.pullRequest.pullRequestNumber\":\"${{ github.event.pull_request.number }}\",
-        #         \"system.pullRequest.mergedAt\":\"\",
-        #         \"system.pullRequest.sourceBranch\":\"${{ github.event.pull_request.head.ref }}\",
-        #         \"system.pullRequest.targetBranch\":\"${{ github.event.pull_request.base.ref }}\",
-        #         \"system.pullRequest.targetBranchName\":\"${{ github.event.pull_request.base.ref }}\",
-        #         \"system.pullRequest.sourceRepositoryUri\":\"$GITHUB_REPO_URI\",
-        #         \"system.pullRequest.sourceCommitId\":\"${{ github.event.pull_request.head.sha }}\",
-        #         \"system.pullRequest.isFork\":\"${{ github.event.pull_request.head.repo.fork }}\"
-        #     }"
-        # }"' > run-pipeline.sh
-        # chmod +x run-pipeline.sh
 
+    - name: Run dispatch script
+      env:
+        GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+      run: |
         echo '{
           "definition": {
               "id": "REPLACE_BUILD_DEFINITION_ID"
